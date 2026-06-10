@@ -1,0 +1,8 @@
+the cat sits on the mat
+the dog sits on the mat
+the cat eats the food
+the dog eats the food
+the car drives on the road
+the truck drives on the road
+the car is fast
+the truck is fast
