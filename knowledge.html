@@ -361,19 +361,15 @@
                 </div>
 
                 <div class="var-desc" style="background: #fffbeb; border: 1px solid #fef3c7; margin-top: 2rem;">
-                    <strong>🌡️ บันทึกทางเทคนิค: Temperature Sampling (การปรับความสร้างสรรค์)</strong>
+                    <strong>☢️ บันทึกทางเทคนิค: Top-P Sampling (Nucleus Sampling)</strong>
                     <p style="font-size: 0.85rem; color: #92400e;">
-                        เพื่อให้ AI ไม่พูดคำเดิมซ้ำๆ เราใช้ <b>Temperature</b> ในการปรับความ "กล้า" ในการเลือกคำ:
+                        นอกจาก Top-K (เลือก K คำแรก) เรายังใช้ <b>Top-P</b> เพื่อเลือกคำจนกว่า "ความน่าจะเป็นรวม" จะถึงค่า P (เช่น 0.9) ช่วยให้ AI เลือกคำได้ยืดหยุ่นขึ้นตามสถานการณ์ (คำที่มั่นใจสูงเลือกได้หลายคำ, คำที่มั่นใจต่ำจะถูกจำกัดวง)
                     </p>
-                    <ul style="font-size: 0.85rem; color: #92400e;">
-                        <li><b>Low Temp (ใกล้ 0):</b> AI จะมั่นคง เลือกเฉพาะคำที่มีโอกาสเกิดสูงสุด (Deterministic)</li>
-                        <li><b>High Temp (ใกล้ 1 หรือมากกว่า):</b> AI จะมีความ "สร้างสรรค์" มากขึ้น เลือกคำที่มีโอกาสเกิดรองลงมาได้บ้าง (Stochastic)</li>
-                    </ul>
                     <div style="font-family: monospace; background: #fef9c3; padding: 0.5rem; border-radius: 4px; margin-top: 10px;">
-                        # วิธีการทำงาน:<br>
-                        logits = logits / temperature<br>
-                        probs = softmax(logits)<br>
-                        predicted_id = np.random.choice(vocab_size, p=probs)
+                        # ตรรกะ:<br>
+                        sorted_probs = sort(probs)<br>
+                        cumulative_probs = cumsum(sorted_probs)<br>
+                        keep_words = cumulative_probs < top_p
                     </div>
                 </div>
             </div>

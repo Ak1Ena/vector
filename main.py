@@ -116,25 +116,40 @@ class SimpleLLMPipeline:
         error = probs - target
         self.W_pred -= learning_rate * np.outer(last_vec, error)
 
-    def stage_5_predict(self, context_vectors, temperature=0.7, top_k=5):
-        """SPEECH: Predicting the next word using Top-K sampling."""
+    def stage_5_predict(self, context_vectors, temperature=0.7, top_k=5, top_p=0.9):
+        """SPEECH: Predicting the next word using Top-K and Top-P (Nucleus) sampling."""
         last_word_vector = context_vectors[-1]
         
-        # Pass through the prediction head
+        # 1. Forward pass
         logits = last_word_vector @ self.W_pred
-        
-        # 1. Apply temperature
         logits = logits / temperature
         
-        # 2. Top-K filtering: set all but the top K logits to -infinity
+        # 2. Top-K filtering
         if top_k > 0:
             top_k = min(top_k, self.vocab_size)
             indices_to_remove = logits < np.sort(logits)[-top_k]
             logits[indices_to_remove] = -float('inf')
             
+        # 3. Top-P (Nucleus) filtering
         probs = softmax(logits)
+        if top_p < 1.0:
+            sorted_indices = np.argsort(probs)[::-1]
+            sorted_probs = probs[sorted_indices]
+            cumulative_probs = np.cumsum(sorted_probs)
+            
+            # Remove tokens with cumulative probability above the threshold
+            sorted_indices_to_remove = cumulative_probs > top_p
+            # Shift right to keep the first token that exceeds the threshold
+            sorted_indices_to_remove[1:] = sorted_indices_to_remove[:-1].copy()
+            sorted_indices_to_remove[0] = False
+            
+            indices_to_remove = sorted_indices[sorted_indices_to_remove]
+            probs[indices_to_remove] = 0
+            
+            # Re-normalize
+            probs = probs / np.sum(probs)
         
-        # 3. Sample
+        # 4. Sample
         predicted_id = np.random.choice(len(probs), p=probs)
         return self.vocab[predicted_id]
 
@@ -195,7 +210,7 @@ def run_llm_pipeline(user_prompt="the cat"):
 
     # 3. GENERATE
     prompt = user_prompt.lower().split()
-    generated_sequence = llm.stage_6_generate(prompt, max_length=10) # Increased to 10 words
+    generated_sequence = llm.stage_6_generate(prompt, max_length=200) # Increased to 10 words
 
 
     print(f"\n--- Full Generation Result ---")
