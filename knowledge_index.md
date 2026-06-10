@@ -16,10 +16,15 @@ This file provides a quick summary of the detailed mathematical explanations fou
 - **Math:** $A = U \Sigma V^T$.
 - **Analogy:** Like the 2D "shadow" of a 3D object.
 
-## 4. Execution Pipeline
+## 4. Visualization & Grouping (Advanced Plotting)
+- **Visual Jitter:** Adding tiny random offsets so overlapping words (with identical vectors) are all visible.
+- **Clustering:** Using Euclidean distance to automatically find "families" of words.
+- **Relation Lines:** Drawing lines between words in the same cluster to show their semantic connection.
+
+## 5. Execution Pipeline
 1. **Train:** `train.py` (Calculates SVD → `learned_vectors.json`).
 2. **Tokenize:** `tokenizer.py` (Reads learned vectors).
-3. **Plot:** `main.py` (Visualizes relationships).
+3. **Plot:** `main.py` (Visualizes relationships using the techniques above).
 
 ---
 *For the full Thai documentation with detailed examples and formulas, see `knowledge.html`.*

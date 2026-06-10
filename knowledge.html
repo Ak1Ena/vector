@@ -38,6 +38,7 @@
             padding: 2rem;
             position: relative;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 0;
         }
         .node h2 {
             margin-top: 0;
@@ -85,7 +86,7 @@
 <body>
     <div class="container">
         <h1>📐 ผังงานคณิตศาสตร์ (Mathematical Flowchart)</h1>
-        <p style="text-align: center;">ทำความเข้าใจการทำงานของอัลกอริทึมจากข้อความสู่เวกเตอร์</p>
+        <p style="text-align: center;">ทำความเข้าใจการทำงานของอัลกอริทึมจากข้อความสู่เวกเตอร์และการจัดกลุ่ม</p>
 
         <div class="flowchart">
             
@@ -101,12 +102,11 @@
                 <div class="io-grid">
                     <div class="io-box">
                         <strong>📥 Input (ประโยค):</strong><br>
-                        <code>"cat sits mat"</code><br>
-                        <code>"dog sits mat"</code>
+                        <code>"cat sits mat"</code>
                     </div>
                     <div class="io-box">
                         <strong>📤 Output (Matrix):</strong><br>
-                        <code>cat & dog</code> จะมีค่าในคอลัมน์ <code>sits</code> และ <code>mat</code> สูงเหมือนกัน
+                        <code>cat & dog</code> จะมีค่าในคอลัมน์ <code>sits</code> สูงเหมือนกัน
                     </div>
                 </div>
             </div>
@@ -159,23 +159,28 @@
 
             <div class="arrow">⬇️</div>
 
-            <!-- Step 4: Projection -->
-            <div class="node" style="border-color: #2ecc71;">
-                <h2>4. การฉายภาพพิกัด (Vector Projection)</h2>
+            <!-- Step 4: Clustering and Visualization -->
+            <div class="node" style="border-color: #e67e22;">
+                <h2>4. การจัดกลุ่มและการแสดงผล (Clustering & Visualization)</h2>
                 <div class="formula-section">
-                    \[(x, y) = (\text{vector}_0, \text{vector}_1)\]
+                    \[\text{dist}(A, B) = \sqrt{\sum (A_i - B_i)^2}\]
                 </div>
                 <div class="explanation">
-                    <strong>คำอธิบาย:</strong> เรานำเอาค่าในมิติที่ 1 และ 2 มาใช้เป็นพิกัด X และ Y เพื่อวาดจุดบนกราฟ 2 มิติ ทำให้เราเห็นความสัมพันธ์ได้ด้วยตาเปล่า
+                    <strong>คำอธิบาย:</strong> เราใช้ <strong>Euclidean Distance</strong> เพื่อจัดกลุ่มคำที่อยู่ใกล้กัน (Clustering) และใช้เทคนิคพิเศษเพื่อให้กราฟอ่านง่ายขึ้น:
+                    <ul>
+                        <li><strong>Visual Jitter:</strong> เพิ่มการกระจายตัวเล็กน้อยเพื่อให้คำที่ซ้อนกันแยกออกจากกันได้</li>
+                        <li><strong>Relation Lines:</strong> ลากเส้นเชื่อมโยงคำที่อยู่ในกลุ่มเดียวกัน</li>
+                        <li><strong>Color Coding:</strong> ใช้สีเดียวกันสำหรับคำที่อยู่ใน "ครอบครัว" เดียวกัน</li>
+                    </ul>
                 </div>
                 <div class="io-grid">
                     <div class="io-box">
                         <strong>📥 Input:</strong><br>
-                        <code>"cat": [0.2, 0.8, ...]</code>
+                        เวกเตอร์ 8 มิติ
                     </div>
                     <div class="io-box">
                         <strong>📤 Output:</strong><br>
-                        จุดบนกราฟที่ <code>cat</code> และ <code>dog</code> อยู่ใกล้กัน
+                        โครงข่ายความสัมพันธ์ (Visual Semantic Network)
                     </div>
                 </div>
             </div>
