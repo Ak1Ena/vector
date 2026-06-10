@@ -344,6 +344,18 @@
                         การมีสถาปัตยกรรม Transformer ไม่ได้ทำให้ AI "ฉลาด" โดยอัตโนมัติ AI จะฉลาดได้ต้องผ่านขั้นตอน <b>Training</b> เพื่อปรับค่า Matrix น้ำหนัก ($W_{pred}$) ให้ตรงกับข้อมูลใน <code>corpus.txt</code> หาก AI ทำนายผลออกมาซ้ำๆ หรือดูไม่สมเหตุสมผล นั่นแปลว่ามันยังเรียนรู้จากข้อมูลไม่พอ (Underfitting)
                     </p>
                 </div>
+
+                <div class="var-desc" style="background: #fdf2f2; border: 1px solid #fecaca; margin-top: 2rem;">
+                    <strong>🛑 บันทึกทางเทคนิค: สภาวะหยุดการทำงาน (Stop Conditions)</strong>
+                    <p style="font-size: 0.85rem; color: #991b1b;">
+                        เนื่องจากโมเดลของเราทำงานแบบ <b>Autoregressive</b> (นำคำที่ทำนายได้กลับไปเป็น Input) มันมีโอกาสเกิดเหตุการณ์ <b>"วนลูป" (Infinite Loop)</b> ได้ง่าย เช่น การทำนายคำเดิมซ้ำๆ เพื่อป้องกันปัญหานี้ เราจึงต้องสร้างเงื่อนไขหยุดการทำงาน (Stop Condition):
+                    </p>
+                    <ul style="font-size: 0.85rem; color: #991b1b;">
+                        <li><b>Period Detection:</b> หากโมเดลทำนายได้จุด (<code>"."</code>) ให้หยุดทันที</li>
+                        <li><b>Repetition Check:</b> หากคำถัดไปซ้ำกับคำก่อนหน้า ให้หยุดเพื่อป้องกันการวนลูป</li>
+                        <li><b>Max Length:</b> กำหนดจำนวนคำสูงสุดเสมอเพื่อให้โมเดลรู้ว่าเมื่อไหร่ต้องพอ</li>
+                    </ul>
+                </div>
             </div>
         </section>
 

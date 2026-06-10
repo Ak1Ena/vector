@@ -18,20 +18,41 @@ class SimpleLLMPipeline:
         self.W_pred = None # Initialized after loading brain
 
     def stage_1_pretrain(self, force=False):
-        """LEARNING: Reading corpus.txt and creating the static brain (SVD)."""
-        print("\n[Stage 1: Pre-training] Building static knowledge from corpus.txt...")
-        if force or not os.path.exists("learned_vectors.json"):
+        """LEARNING: Reading corpus.txt and creating/loading static brain and weights."""
+        print("\n[Stage 1: Pre-training] Checking for existing knowledge...")
+        
+        # Check if we need to train
+        vectors_path = "learned_vectors.json"
+        weights_path = "prediction_weights.npy"
+        
+        needs_training = force or not os.path.exists(vectors_path) or not os.path.exists(weights_path)
+        
+        # Also check if corpus was modified after the vectors were saved
+        if not needs_training and os.path.exists(vectors_path):
+            if os.path.getmtime("corpus.txt") > os.path.getmtime(vectors_path):
+                print("⚠️ corpus.txt was modified. Re-training...")
+                needs_training = True
+
+        if needs_training:
             train()
         
-        with open("learned_vectors.json", "r") as f:
+        with open(vectors_path, "r") as f:
             self.static_brain = json.load(f)
         
         self.vocab = sorted(self.static_brain.keys())
         self.vocab_size = len(self.vocab)
-        # Initialize W_pred now that we know vocab size
-        self.W_pred = np.random.randn(self.d_model, self.vocab_size) * 0.1
+        
+        if needs_training:
+            self.W_pred = np.random.randn(self.d_model, self.vocab_size) * 0.1
+        else:
+            self.W_pred = np.load(weights_path)
         
         print(f"✅ Brain loaded with {len(self.static_brain)} unique word embeddings.")
+
+    def save_weights(self):
+        """Save the prediction head weights."""
+        np.save("prediction_weights.npy", self.W_pred)
+        print("💾 Weights saved.")
 
     def stage_2_encode(self, sentence_list):
         """INPUT: Tokenizing words and adding positional information."""
@@ -99,12 +120,12 @@ class SimpleLLMPipeline:
         predicted_id = np.argmax(probs)
         return self.vocab[predicted_id]
 
-    def stage_6_generate(self, prompt, max_length=10):
+    def stage_6_generate(self, prompt, length=10):
         """GENERATION: A loop that predicts words until a stop condition."""
-        print(f"\n[Stage 6: Generation] Generating (Max {max_length} words)...")
+        print(f"\n[Stage 6: Generation] Generating (Max {length} words)...")
         current_seq = prompt.copy()
         
-        for _ in range(max_length):
+        for _ in range(length):
             encoded = self.stage_2_encode(current_seq)
             transformed, _ = self.stage_3_transform(encoded)
             next_word = self.stage_5_predict(transformed)
@@ -135,8 +156,17 @@ def run_llm_pipeline(user_prompt="the cat"):
     with open("corpus.txt", "r") as f:
         corpus = f.readlines()
 
-    # 2. TRAIN THE PREDICTION HEAD
-    llm.stage_5_train_all(corpus, epochs=5) # 5 epochs is enough for this tiny data
+    # 2. TRAIN THE PREDICTION HEAD (Only if new)
+    # Check if we need to train based on whether W_pred was just initialized (randomly)
+    if llm.W_pred is not None:
+        # Load corpus for training the head
+        with open("corpus.txt", "r") as f:
+            corpus = f.readlines()
+        
+        # Train
+        llm.stage_5_train_all(corpus, epochs=5)
+        # Save weights
+        llm.save_weights()
 
     # 3. GENERATE
     prompt = user_prompt.lower().split()
