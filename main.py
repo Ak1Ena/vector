@@ -116,12 +116,19 @@ class SimpleLLMPipeline:
         error = probs - target
         self.W_pred -= learning_rate * np.outer(last_vec, error)
 
-    def stage_5_predict(self, context_vectors, temperature=0.7, top_k=5, top_p=0.9):
-        """SPEECH: Predicting the next word using Top-K and Top-P (Nucleus) sampling."""
+    def stage_5_predict(self, context_vectors, current_seq, temperature=0.5, top_k=5, top_p=0.9):
+        """SPEECH: Predicting the next word with strong repetition penalty."""
         last_word_vector = context_vectors[-1]
         
         # 1. Forward pass
         logits = last_word_vector @ self.W_pred
+        
+        # Apply stronger repetition penalty: reduce probability of recently used words
+        for i, word in enumerate(reversed(current_seq[-5:])): 
+            if word in self.vocab:
+                word_id = self.vocab.index(word)
+                logits[word_id] -= 10.0 # Significantly increased penalty
+        
         logits = logits / temperature
         
         # 2. Top-K filtering
@@ -137,45 +144,42 @@ class SimpleLLMPipeline:
             sorted_probs = probs[sorted_indices]
             cumulative_probs = np.cumsum(sorted_probs)
             
-            # Remove tokens with cumulative probability above the threshold
             sorted_indices_to_remove = cumulative_probs > top_p
-            # Shift right to keep the first token that exceeds the threshold
             sorted_indices_to_remove[1:] = sorted_indices_to_remove[:-1].copy()
             sorted_indices_to_remove[0] = False
             
             indices_to_remove = sorted_indices[sorted_indices_to_remove]
             probs[indices_to_remove] = 0
-            
-            # Re-normalize
             probs = probs / np.sum(probs)
         
         # 4. Sample
         predicted_id = np.random.choice(len(probs), p=probs)
         return self.vocab[predicted_id]
 
-    def stage_6_generate(self, prompt, max_length=20):
-        """GENERATION: Autoregressive dialogue generation with better stopping."""
-        print(f"\n[Stage 6: Generation] Creating conversational response...")
+    def stage_6_generate(self, prompt, max_length=15):
+        """GENERATION: Autoregressive dialogue generation with hard stop conditions."""
+        print(f"\n[Stage 6: Generation] Creating response (Max {max_length} words)...")
         current_seq = prompt.copy()
-
+        
         for _ in range(max_length):
-            # 1. Encode
             encoded = self.stage_2_encode(current_seq)
-
-            # 2. Transform
             transformed, _ = self.stage_3_transform(encoded)
-
-            # 3. Predict
-            next_word = self.stage_5_predict(transformed, temperature=0.7)
-
-            # 4. Stopping conditions - be more flexible
+            next_word = self.stage_5_predict(transformed, current_seq=current_seq, temperature=0.5)
+            
+            # HARD STOP CONDITIONS
+            # 1. Stop if word is repeated 3 times in a row
+            if len(current_seq) > 2 and next_word == current_seq[-1] == current_seq[-2]:
+                print(f"🛑 Generation stopped: Repetition limit reached ('{next_word}').")
+                break
+            
+            # 2. Stop if it's punctuation
             if next_word in [".", "!", "?"]:
                 current_seq.append(next_word)
                 break
-
+                
             print(f"🔮 Predicted: '{next_word}'")
             current_seq.append(next_word)
-
+        
         return current_seq
 
 
