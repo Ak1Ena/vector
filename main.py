@@ -1,6 +1,7 @@
 import numpy as np
 import json
 import os
+from tqdm import tqdm
 from train import train
 from tokenizer import tokenizer
 from transformer import TransformerStack, PositionalEncoding, softmax
@@ -55,7 +56,7 @@ class SimpleLLMPipeline:
 
     def stage_2_encode(self, sentence_list):
         """INPUT: Tokenizing words and adding positional information."""
-        print(f"\n[Stage 2: Encoding] Processing input: '{' '.join(sentence_list)}'")
+        # print(f"\n[Stage 2: Encoding] Processing input: '{' '.join(sentence_list)}'")
         
         # 1. Lookup static vectors (Dictionary meaning)
         x = np.array([self.static_brain.get(w, [0]*self.d_model) for w in sentence_list])
@@ -66,29 +67,36 @@ class SimpleLLMPipeline:
 
     def stage_3_transform(self, encoded_input):
         """THINKING: Using the Transformer to understand context."""
-        print("[Stage 3: Transformation] Applying Self-Attention for context...")
+        # print("[Stage 3: Transformation] Applying Self-Attention for context...")
         context_vectors, weights = self.transformer.forward(encoded_input)
         return context_vectors, weights
 
-    def stage_5_train_all(self, corpus_lines, epochs=100):
+    def stage_5_train_all(self, corpus_lines, epochs=50):
         """LEARNING: Training the head on the full corpus."""
         print(f"\n[Stage 5: Prediction Training] Training on {len(corpus_lines)} lines...")
+        
         for epoch in range(epochs):
-            for line in corpus_lines:
-                words = line.strip().split()
-                if len(words) < 2: continue
-                
-                # Train to predict next word for each word in sequence
-                for i in range(len(words) - 1):
-                    prompt = words[:i+1]
-                    target = words[i+1]
+            # Using tqdm for a progress bar per epoch
+            with tqdm(total=len(corpus_lines), desc=f"Epoch {epoch+1}/{epochs}", unit="line") as pbar:
+                for line in corpus_lines:
+                    words = line.strip().split()
+                    if len(words) < 2: 
+                        pbar.update(1)
+                        continue
                     
-                    if target not in self.vocab: continue
-                    
-                    encoded = self.stage_2_encode(prompt)
-                    transformed, _ = self.stage_3_transform(encoded)
-                    self.stage_5_train(transformed, target)
+                    # Train to predict next word for each word in sequence
+                    for i in range(len(words) - 1):
+                        prompt = words[:i+1]
+                        target = words[i+1]
+                        
+                        if target not in self.vocab: continue
+                        
+                        encoded = self.stage_2_encode(prompt)
+                        transformed, _ = self.stage_3_transform(encoded)
+                        self.stage_5_train(transformed, target)
+                    pbar.update(1)
         print("✅ Prediction head trained successfully.")
+
 
     def stage_5_train(self, encoded_context, target_word, learning_rate=0.1):
         """LEARNING: Training the head to predict the next word."""
@@ -123,28 +131,31 @@ class SimpleLLMPipeline:
         predicted_id = np.random.choice(len(probs), p=probs)
         return self.vocab[predicted_id]
 
-    def stage_6_generate(self, prompt, max_length=15):
-        """GENERATION: Autoregressive dialogue generation."""
+    def stage_6_generate(self, prompt, max_length=20):
+        """GENERATION: Autoregressive dialogue generation with better stopping."""
         print(f"\n[Stage 6: Generation] Creating conversational response...")
         current_seq = prompt.copy()
-        
+
         for _ in range(max_length):
-            # 1. Encode the FULL conversation history (Prompt + what we've generated so far)
+            # 1. Encode
             encoded = self.stage_2_encode(current_seq)
-            
-            # 2. Transform with context
+
+            # 2. Transform
             transformed, _ = self.stage_3_transform(encoded)
-            
-            # 3. Predict next word with slight randomness for creativity
-            next_word = self.stage_5_predict(transformed, temperature=0.8)
-            
-            # 4. Stopping conditions
-            if next_word == "." or next_word in current_seq[-3:]:
+
+            # 3. Predict
+            next_word = self.stage_5_predict(transformed, temperature=0.7)
+
+            # 4. Stopping conditions - be more flexible
+            if next_word in [".", "!", "?"]:
+                current_seq.append(next_word)
                 break
-                
+
+            print(f"🔮 Predicted: '{next_word}'")
             current_seq.append(next_word)
-        
+
         return current_seq
+
 
     def stage_4_visualize(self, final_results):
         """OUTPUT: Plotting the final contextual understanding."""
@@ -169,7 +180,7 @@ def run_llm_pipeline(user_prompt="the cat"):
             corpus = f.readlines()
         
         # Train
-        llm.stage_5_train_all(corpus, epochs=5)
+        llm.stage_5_train_all(corpus, epochs=20) # Increased to 50 epochs
         # Save weights
         llm.save_weights()
     else:
@@ -177,7 +188,7 @@ def run_llm_pipeline(user_prompt="the cat"):
 
     # 3. GENERATE
     prompt = user_prompt.lower().split()
-    generated_sequence = llm.stage_6_generate(prompt, max_length=10)
+    generated_sequence = llm.stage_6_generate(prompt, max_length=10) # Increased to 10 words
 
 
     print(f"\n--- Full Generation Result ---")
