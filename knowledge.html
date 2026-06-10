@@ -182,6 +182,29 @@
         <section id="foundations">
             <h2 class="section-title">🏗️ Foundations: พื้นฐานและการสร้างเวกเตอร์</h2>
             
+            <div class="node" style="border-color: #3498db; background: #fff; margin-bottom: 2rem;">
+                <h3>🛠️ บันทึกทางเทคนิค: Identity Matrix (np.eye)</h3>
+                <p>Identity Matrix ( \(I\) ) คือ Matrix ที่มีค่าเป็น 1 ในแนวทะแยงและ 0 ในตำแหน่งอื่นทั้งหมด มีคุณสมบัติพิเศษคือเมื่อนำไปคูณกับข้อมูลใดๆ ข้อมูลนั้นจะไม่เปลี่ยนแปลง (Identity Mapping)</p>
+                <div class="formula-container">
+                    \[ I = \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} \]
+                </div>
+                <div class="var-desc">
+                    <strong>การใช้งานในโปรเจกต์:</strong>
+                    <p>เราใช้ <code>np.eye(d_model)</code> เพื่อเริ่มต้นค่า Weight ของ Transformer แทนการสุ่ม ซึ่งช่วยให้ AI "มองเห็น" ข้อมูลดั้งเดิมได้ชัดเจนที่สุดโดยไม่ถูกบิดเบือน</p>
+                </div>
+                
+                <div class="data-panel" style="margin-top: 1rem;">
+                    <div class="data-header">💻 ตัวอย่างการทำงานใน Python</div>
+                    <div class="data-body">
+                        <code>import numpy as np</code><br>
+                        <code>I = np.eye(3)</code><br>
+                        <code>vector = np.array([5, 2, 9])</code><br><br>
+                        <code># ผลลัพธ์: [5, 2, 9] (ข้อมูลคงเดิม)</code><br>
+                        <code>result = vector @ I</code>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <h3>การเปลี่ยนข้อความเป็นตัวเลข (Statistical Representation)</h3>
                 <p>เราสร้างความหมายเบื้องต้นจากการสังเกตพฤติกรรมการใช้คำในประโยค โดยนับการปรากฏตัวร่วมกันเพื่อสร้าง "พิมพ์เขียว" ทางสถิติ</p>
@@ -245,7 +268,7 @@
                 <p>เพื่อระบุว่าคำไหนคือ "ครอบครัวเดียวกัน" เราวัดระยะห่างระหว่างจุดในพื้นที่ 8 มิติ ยิ่งระยะห่างน้อย ความหมายยิ่งใกล้กัน</p>
                 
                 <div class="formula-container">
-                    \[d = \sqrt{\sum (q_i - p_i)^2}\]
+                    \[d = \sqrt{\sum (q_i - p_i)^2\]
                 </div>
 
                 <div class="var-desc">
@@ -312,6 +335,17 @@
                     <div class="data-panel">
                         <div class="data-header">Contextual Output</div>
                         <div class="data-body">"cat" in "hunts in forest"<br>-> Updated meaning vector</div>
+                    </div>
+                </div>
+
+                <div class="var-desc" style="background: #f0fdf4; border: 1px solid #bbf7d0; margin-top: 2rem;">
+                    <strong>🛠️ บันทึกทางเทคนิค: Identity Weights (น้ำหนักเริ่มต้นแบบคงที่)</strong>
+                    <p style="font-size: 0.85rem; color: #166534;">
+                        เราเปลี่ยนจากการใช้ <b>"น้ำหนักแบบสุ่ม" (Random Weights)</b> ที่ทำให้โมเดลสับสนในช่วงแรก มาเป็น <b>Identity Matrix (I)</b> แทน วิธีนี้ช่วยให้ AI "มองเห็น" ข้อมูลดั้งเดิมได้โดยตรงโดยไม่ถูกบิดเบือน ช่วยให้เราทดสอบตรรกะของโมเดลได้ชัดเจนขึ้น
+                    </p>
+                    <div style="font-family: monospace; background: #dcfce7; padding: 0.5rem; border-radius: 4px; margin-top: 10px;">
+                        # วิธีการสร้าง:<br>
+                        W = np.eye(d_model) # สร้าง Matrix ขนาด d_model x d_model ที่มีค่า 1 ในแนวทะแยง
                     </div>
                 </div>
             </div>

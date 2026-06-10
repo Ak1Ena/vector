@@ -11,16 +11,22 @@ This project is a "from scratch" educational prototype for learning word embeddi
 
 ## Building and Running
 
-### Training
-To learn vectors from your corpus:
-```bash
-python3 train.py
-```
+### The Master Command
+This project is orchestrated through `main.py`. It handles the entire pipeline:
+1. Checks for learned vectors (runs `train.py` if needed).
+2. Retrieves static word knowledge.
+3. Simulates a Transformer-based contextual shift.
+4. Visualizes all relationships in a unified plot.
 
-### Visualization
-To generate the embedding plot:
+To run everything, simply use:
 ```bash
 python3 main.py
+```
+
+### Manual Training (Optional)
+If you update `corpus.txt` and want to force a re-learn of the static vectors:
+```bash
+python3 train.py
 ```
 
 ## Development Conventions

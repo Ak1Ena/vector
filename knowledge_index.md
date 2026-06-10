@@ -3,9 +3,10 @@
 This file provides a structured summary of the mathematical concepts explained in `knowledge.html`.
 
 ## Category 1: Foundations (Classic NLP)
+- **Identity Matrix (`np.eye`):** A mathematical pass-through used to initialize weights without random noise.
 - **Co-occurrence Matrix:** Converting raw text into statistical interaction counts.
 - **SVD Decomposition:** Compressing high-dimensional matrices into 8D embeddings.
-- **Math:** $C_{i,j}$ and $A = U \Sigma V^T$.
+- **Math:** $C_{i,j}$, $A = U \Sigma V^T$, and $I$.
 
 ## Category 2: Visualization & Analysis
 - **Semantic Clustering:** Automatically finding "families" of words using Euclidean distance.
