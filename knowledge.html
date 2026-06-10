@@ -338,15 +338,11 @@
                     </div>
                 </div>
 
-                <div class="var-desc" style="background: #f0fdf4; border: 1px solid #bbf7d0; margin-top: 2rem;">
-                    <strong>🛠️ บันทึกทางเทคนิค: Identity Weights (น้ำหนักเริ่มต้นแบบคงที่)</strong>
-                    <p style="font-size: 0.85rem; color: #166534;">
-                        เราเปลี่ยนจากการใช้ <b>"น้ำหนักแบบสุ่ม" (Random Weights)</b> ที่ทำให้โมเดลสับสนในช่วงแรก มาเป็น <b>Identity Matrix (I)</b> แทน วิธีนี้ช่วยให้ AI "มองเห็น" ข้อมูลดั้งเดิมได้โดยตรงโดยไม่ถูกบิดเบือน ช่วยให้เราทดสอบตรรกะของโมเดลได้ชัดเจนขึ้น
+                <div class="var-desc" style="background: #fff1f2; border: 1px solid #fecaca; margin-top: 2rem;">
+                    <strong>⚠️ บันทึกสำคัญ: โครงสร้าง (Architecture) vs การฝึกฝน (Training)</strong>
+                    <p style="font-size: 0.85rem; color: #991b1b;">
+                        การมีสถาปัตยกรรม Transformer ไม่ได้ทำให้ AI "ฉลาด" โดยอัตโนมัติ AI จะฉลาดได้ต้องผ่านขั้นตอน <b>Training</b> เพื่อปรับค่า Matrix น้ำหนัก ($W_{pred}$) ให้ตรงกับข้อมูลใน <code>corpus.txt</code> หาก AI ทำนายผลออกมาซ้ำๆ หรือดูไม่สมเหตุสมผล นั่นแปลว่ามันยังเรียนรู้จากข้อมูลไม่พอ (Underfitting)
                     </p>
-                    <div style="font-family: monospace; background: #dcfce7; padding: 0.5rem; border-radius: 4px; margin-top: 10px;">
-                        # วิธีการสร้าง:<br>
-                        W = np.eye(d_model) # สร้าง Matrix ขนาด d_model x d_model ที่มีค่า 1 ในแนวทะแยง
-                    </div>
                 </div>
             </div>
         </section>

@@ -67,6 +67,17 @@ class TransformerBlock:
         
         return x, weights
 
+class TransformerStack:
+    def __init__(self, d_model=8, d_ff=32, num_layers=3):
+        self.layers = [TransformerBlock(d_model, d_ff) for _ in range(num_layers)]
+
+    def forward(self, x):
+        weights_list = []
+        for layer in self.layers:
+            x, weights = layer.forward(x)
+            weights_list.append(weights)
+        return x, weights_list
+
 def run_transformer_logic():
     # Load learned vectors
     try:
@@ -84,20 +95,18 @@ def run_transformer_logic():
     pe = PositionalEncoding(d_model=8)
     x_pos = pe.add(x)
     
-    # 2. Process through Transformer Block
-    model = TransformerBlock(d_model=8)
-    context_vectors, attn_weights = model.forward(x_pos)
+    # 2. Process through Transformer Stack (3 Layers)
+    model = TransformerStack(d_model=8, num_layers=3)
+    context_vectors, attn_weights_list = model.forward(x_pos)
     
-    print(f"--- Complete Transformer Pipeline ---")
+    print(f"--- Complete Multi-Layer Transformer Pipeline ---")
     print(f"Sequence: {' '.join(sentence)}")
-    print(f"\nStep 1: Added Positional Encoding (Awareness of word order)")
-    print(f"Step 2: Processed through Self-Attention (Context understanding)")
-    print(f"Step 3: Processed through Feed-Forward Network (Feature refinement)")
+    print(f"\nProcessing through 3 Transformer Layers...")
     
-    print("\nAttention Matrix Snippet (First 3 words):")
-    print(attn_weights[:3, :3])
+    print("\nAttention Matrix Snippet (Layer 3, First 3 words):")
+    print(attn_weights_list[-1][:3, :3])
     
-    print(f"\nResult: Word 'cat' has been transformed into a contextual vector.")
+    print(f"\nResult: Word 'cat' has been transformed through 3 layers.")
     print(f"Original: {np.round(x[1][:3], 3)}")
     print(f"Final:    {np.round(context_vectors[1][:3], 3)}")
 
