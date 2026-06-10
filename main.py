@@ -116,18 +116,25 @@ class SimpleLLMPipeline:
         error = probs - target
         self.W_pred -= learning_rate * np.outer(last_vec, error)
 
-    def stage_5_predict(self, context_vectors, temperature=0.7):
-        """SPEECH: Predicting the next word using temperature sampling."""
+    def stage_5_predict(self, context_vectors, temperature=0.7, top_k=5):
+        """SPEECH: Predicting the next word using Top-K sampling."""
         last_word_vector = context_vectors[-1]
         
         # Pass through the prediction head
         logits = last_word_vector @ self.W_pred
         
-        # Apply temperature
+        # 1. Apply temperature
         logits = logits / temperature
+        
+        # 2. Top-K filtering: set all but the top K logits to -infinity
+        if top_k > 0:
+            top_k = min(top_k, self.vocab_size)
+            indices_to_remove = logits < np.sort(logits)[-top_k]
+            logits[indices_to_remove] = -float('inf')
+            
         probs = softmax(logits)
         
-        # Sample from the distribution instead of always picking the argmax
+        # 3. Sample
         predicted_id = np.random.choice(len(probs), p=probs)
         return self.vocab[predicted_id]
 
