@@ -15,25 +15,24 @@ class SimpleLLMPipeline:
         self.transformer = TransformerStack(d_model=d_model, num_layers=3)
         self.static_brain = {}
         self.vocab = []
-        self.W_pred = None # Initialized after loading brain
+        self.W_pred = None 
+        self.needs_training = False # Track if training is required
 
     def stage_1_pretrain(self, force=False):
         """LEARNING: Reading corpus.txt and creating/loading static brain and weights."""
         print("\n[Stage 1: Pre-training] Checking for existing knowledge...")
         
-        # Check if we need to train
         vectors_path = "learned_vectors.json"
         weights_path = "prediction_weights.npy"
         
-        needs_training = force or not os.path.exists(vectors_path) or not os.path.exists(weights_path)
+        self.needs_training = force or not os.path.exists(vectors_path) or not os.path.exists(weights_path)
         
-        # Also check if corpus was modified after the vectors were saved
-        if not needs_training and os.path.exists(vectors_path):
+        if not self.needs_training and os.path.exists(vectors_path):
             if os.path.getmtime("corpus.txt") > os.path.getmtime(vectors_path):
                 print("⚠️ corpus.txt was modified. Re-training...")
-                needs_training = True
+                self.needs_training = True
 
-        if needs_training:
+        if self.needs_training:
             train()
         
         with open(vectors_path, "r") as f:
@@ -42,7 +41,7 @@ class SimpleLLMPipeline:
         self.vocab = sorted(self.static_brain.keys())
         self.vocab_size = len(self.vocab)
         
-        if needs_training:
+        if self.needs_training:
             self.W_pred = np.random.randn(self.d_model, self.vocab_size) * 0.1
         else:
             self.W_pred = np.load(weights_path)
@@ -156,9 +155,8 @@ def run_llm_pipeline(user_prompt="the cat"):
     with open("corpus.txt", "r") as f:
         corpus = f.readlines()
 
-    # 2. TRAIN THE PREDICTION HEAD (Only if new)
-    # Check if we need to train based on whether W_pred was just initialized (randomly)
-    if llm.W_pred is not None:
+    # 2. TRAIN THE PREDICTION HEAD (Only if new or modified)
+    if llm.needs_training:
         # Load corpus for training the head
         with open("corpus.txt", "r") as f:
             corpus = f.readlines()
@@ -167,6 +165,8 @@ def run_llm_pipeline(user_prompt="the cat"):
         llm.stage_5_train_all(corpus, epochs=5)
         # Save weights
         llm.save_weights()
+    else:
+        print("\n[Stage 5: Prediction] Knowledge is up-to-date. Skipping training.")
 
     # 3. GENERATE
     prompt = user_prompt.lower().split()
