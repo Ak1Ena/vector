@@ -1,30 +1,21 @@
-# Knowledge Index
+# Knowledge Index (Categorized)
 
-This file provides a quick summary of the detailed mathematical explanations found in `knowledge.html`.
+This file provides a structured summary of the mathematical concepts explained in `knowledge.html`.
 
-## 1. Data Collection (Corpus)
-- **Concept:** Converting raw sentences into word pairs.
-- **Example:** "cat sits mat" → `(cat, sits)`, `(cat, mat)`.
+## Category 1: Foundations (Classic NLP)
+- **Co-occurrence Matrix:** Converting raw text into statistical interaction counts.
+- **SVD Decomposition:** Compressing high-dimensional matrices into 8D embeddings.
+- **Math:** $C_{i,j}$ and $A = U \Sigma V^T$.
 
-## 2. Co-occurrence Matrix
-- **Concept:** A table counting how often words appear together.
-- **Math:** $C_{i,j} = \sum (\text{occurrences of } w_i, w_j)$.
-- **Key Insight:** Related words (like cat/dog) will have similar rows in this matrix.
+## Category 2: Visualization & Analysis
+- **Semantic Clustering:** Automatically finding "families" of words using Euclidean distance.
+- **Relation Network:** Using jitter, colors, and lines to visualize semantic webs.
+- **Math:** $\text{dist} = \sqrt{\sum (A_i - B_i)^2}$.
 
-## 3. Dimensionality Reduction (SVD)
-- **Concept:** Compressing the giant matrix into small 8D vectors.
-- **Math:** $A = U \Sigma V^T$.
-- **Analogy:** Like the 2D "shadow" of a 3D object.
-
-## 4. Visualization & Grouping (Advanced Plotting)
-- **Visual Jitter:** Adding tiny random offsets so overlapping words (with identical vectors) are all visible.
-- **Clustering:** Using Euclidean distance to automatically find "families" of words.
-- **Relation Lines:** Drawing lines between words in the same cluster to show their semantic connection.
-
-## 5. Execution Pipeline
-1. **Train:** `train.py` (Calculates SVD → `learned_vectors.json`).
-2. **Tokenize:** `tokenizer.py` (Reads learned vectors).
-3. **Plot:** `main.py` (Visualizes relationships using the techniques above).
+## Category 3: Modern AI (Deep Learning)
+- **Transformers:** Moving from static vectors to contextual, dynamic vectors.
+- **Self-Attention:** The "Attention" mechanism that powers ChatGPT and Gemini.
+- **Math:** $\text{Attention}(Q, K, V) = \text{softmax}(\frac{QK^T}{\sqrt{d_k}})V$.
 
 ---
-*For the full Thai documentation with detailed examples and formulas, see `knowledge.html`.*
+*For the full Thai documentation with visual examples and detailed workflows, see `knowledge.html`.*
