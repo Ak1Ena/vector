@@ -108,33 +108,40 @@ class SimpleLLMPipeline:
         error = probs - target
         self.W_pred -= learning_rate * np.outer(last_vec, error)
 
-    def stage_5_predict(self, context_vectors):
-        """SPEECH: Predicting the most likely next word."""
+    def stage_5_predict(self, context_vectors, temperature=0.7):
+        """SPEECH: Predicting the next word using temperature sampling."""
         last_word_vector = context_vectors[-1]
         
         # Pass through the prediction head
         logits = last_word_vector @ self.W_pred
+        
+        # Apply temperature
+        logits = logits / temperature
         probs = softmax(logits)
         
-        predicted_id = np.argmax(probs)
+        # Sample from the distribution instead of always picking the argmax
+        predicted_id = np.random.choice(len(probs), p=probs)
         return self.vocab[predicted_id]
 
-    def stage_6_generate(self, prompt, length=10):
-        """GENERATION: A loop that predicts words until a stop condition."""
-        print(f"\n[Stage 6: Generation] Generating (Max {length} words)...")
+    def stage_6_generate(self, prompt, max_length=15):
+        """GENERATION: Autoregressive dialogue generation."""
+        print(f"\n[Stage 6: Generation] Creating conversational response...")
         current_seq = prompt.copy()
         
-        for _ in range(length):
+        for _ in range(max_length):
+            # 1. Encode the FULL conversation history (Prompt + what we've generated so far)
             encoded = self.stage_2_encode(current_seq)
-            transformed, _ = self.stage_3_transform(encoded)
-            next_word = self.stage_5_predict(transformed)
             
-            # Stop if the model predicts a period or repeats the last word
-            if next_word == "." or next_word == current_seq[-1]:
-                print(f"🛑 Generation stopped: {'Period detected' if next_word == '.' else 'Repetition detected'}.")
+            # 2. Transform with context
+            transformed, _ = self.stage_3_transform(encoded)
+            
+            # 3. Predict next word with slight randomness for creativity
+            next_word = self.stage_5_predict(transformed, temperature=0.8)
+            
+            # 4. Stopping conditions
+            if next_word == "." or next_word in current_seq[-3:]:
                 break
                 
-            print(f"🔮 Predicted: '{next_word}'")
             current_seq.append(next_word)
         
         return current_seq
@@ -170,7 +177,7 @@ def run_llm_pipeline(user_prompt="the cat"):
 
     # 3. GENERATE
     prompt = user_prompt.lower().split()
-    generated_sequence = llm.stage_6_generate(prompt, length=3)
+    generated_sequence = llm.stage_6_generate(prompt, max_length=10)
 
 
     print(f"\n--- Full Generation Result ---")
